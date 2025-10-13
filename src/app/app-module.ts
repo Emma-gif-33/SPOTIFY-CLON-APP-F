@@ -7,6 +7,7 @@ import { SongInfo } from './song-info/song-info';
 import { AudioController } from './audio-controller/audio-controller';
 import { Playlist } from './playlist/playlist';
 import { Player } from './player/player';
+import { provideHttpClient } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { Player } from './player/player';
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection()
+    provideZonelessChangeDetection(),
+    provideHttpClient(),
   ],
   bootstrap: [App]
 })
