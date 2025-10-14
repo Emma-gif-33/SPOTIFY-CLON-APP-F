@@ -21,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
         if(!body || !body.access_token)
           return;
 
-        const expirationTimeMS = 60*1000;
+        const expirationTimeMS = 10*1000;
         const expirationDate = new Date(Date.now() + expirationTimeMS);
 
        _cookieService.createCookie('access_token',body.access_token, expirationDate);
