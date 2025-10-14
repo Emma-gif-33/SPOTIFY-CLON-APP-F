@@ -7,7 +7,9 @@ import { SongInfo } from './song-info/song-info';
 import { AudioController } from './audio-controller/audio-controller';
 import { Playlist } from './playlist/playlist';
 import { Player } from './player/player';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './interceptors/auth-interceptor';
+import { addAuthHeaderInterceptor } from './interceptors/add-auth-header-interceptor';
 
 @NgModule({
   declarations: [
@@ -24,7 +26,12 @@ import { provideHttpClient } from '@angular/common/http';
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([
+        authInterceptor,
+        addAuthHeaderInterceptor
+      ])
+    ),
   ],
   bootstrap: [App]
 })
