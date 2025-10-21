@@ -11,7 +11,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { authInterceptor } from './interceptors/auth-interceptor';
 import { addAuthHeaderInterceptor } from './interceptors/core/add-auth-header-interceptor';
-import { TestModule } from './test/test-module';
+import { SearchModule } from './search/search-module';
 
 @NgModule({
   declarations: [
@@ -24,7 +24,7 @@ import { TestModule } from './test/test-module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    TestModule
+    SearchModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

@@ -12,10 +12,6 @@ const routes: Routes = [
   {
     path:'controller',
     component: AudioController
-  },
-  {
-    path:'view',
-    loadChildren: () => import('./test/test-module').then(m => m.TestModule)
   }
 ];
 

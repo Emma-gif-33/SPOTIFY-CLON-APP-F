@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StaticChild } from './static-child';
+import { SearchSection } from './search-section';
 
-describe('StaticChild', () => {
-  let component: StaticChild;
-  let fixture: ComponentFixture<StaticChild>;
+describe('SearchSection', () => {
+  let component: SearchSection;
+  let fixture: ComponentFixture<SearchSection>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [StaticChild]
+      declarations: [SearchSection]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(StaticChild);
+    fixture = TestBed.createComponent(SearchSection);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
