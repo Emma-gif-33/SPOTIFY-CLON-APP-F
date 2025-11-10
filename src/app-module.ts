@@ -17,7 +17,6 @@ import { SpotifyApiService } from './app/services/spotify/spotify-api-service';
 import { SpotifyAuthService } from './app/services/spotify/spotify-auth';
 import { CookiesStorageService } from './app/services/cookie-service';
 import { FormsModule } from '@angular/forms';
-import { Disc } from './app/components/disc/disc';
 
 
 @NgModule({
@@ -26,8 +25,7 @@ import { Disc } from './app/components/disc/disc';
     Player,
     PlayerBar,
     Search,
-    Playlist,
-    Disc
+    Playlist
   ],
   imports: [
     BrowserModule,

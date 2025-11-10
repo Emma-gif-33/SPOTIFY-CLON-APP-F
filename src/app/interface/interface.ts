@@ -66,3 +66,37 @@ export interface Song {
   caratula: string;
   duration: string;
 }
+
+export interface SpotifyPlaylist {
+  id: string;
+  name: string;
+  description: string;
+  type: 'playlist';
+  uri: string;
+  images: SpotifyImage[];
+  owner: {
+    display_name: string;
+  };
+  tracks: {
+    total: number;
+  };
+}
+
+export interface SpotifySearchResponse {
+  tracks?: {
+    items: SpotifyTrack[];
+    total: number;
+  };
+  albums?: {
+    items: SpotifyAlbum[];
+    total: number;
+  };
+  artists?: {
+    items: SpotifyArtist[];
+    total: number;
+  };
+  playlists?: {
+    items: SpotifyPlaylist[];
+    total: number;
+  };
+}

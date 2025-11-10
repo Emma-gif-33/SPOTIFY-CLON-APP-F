@@ -1,55 +1,37 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, Observable, of, switchMap } from 'rxjs';
 import { SpotifySearchResponse, SpotifyTrack } from '../../../app/interface/interface';
 import { environment } from '../../../app/environments/environments.development';
+import { SpotifyAuthService } from './spotify-auth';
+import { spotify } from '../../environments/environments.local';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpotifyApiService {
+  constructor(
+    private http: HttpClient,
+    private authService: SpotifyAuthService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  /** 🔍 Busca canciones, artistas o álbumes */
+  search(query: string, types: string[], limit: number = 10): Observable<SpotifySearchResponse> {
+    const token = this.authService.getAccessToken();
 
-  search(
-    query: string, 
-    types: string[] = ['track', 'album', 'artist'],
-    limit: number = 10
-  ): Observable<SpotifySearchResponse> {
-    const params = new HttpParams()
-      .set('q', query)
-      .set('type', types.join(','))
-      .set('limit', limit.toString());
+    // Si no hay token, lo solicita antes de hacer la búsqueda
+    if (!token) {
+      return this.authService.getClientCredentialsToken().pipe(
+        switchMap(() => this.search(query, types, limit))
+      );
+    }
 
-    return this.http.get<SpotifySearchResponse>(
-      `${environment.API_URL}/search`,
-      { params }
-    ).pipe(
-      catchError(error => {
-        console.error('Error en búsqueda de Spotify:', error);
-        return of({
-          tracks: { items: [], total: 0 },
-          albums: { items: [], total: 0 },
-          artists: { items: [], total: 0 }
-        });
-      })
-    );
-  }
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
 
-  getTrack(trackId: string): Observable<SpotifyTrack> {
-    return this.http.get<SpotifyTrack>(
-      `${environment.API_URL}/tracks/${trackId}`
-    );
-  }
+    const url = `${spotify.API_URL}/search?q=${encodeURIComponent(query)}&type=${types.join(',')}&limit=${limit}`;
 
-  getRecommendations(limit: number = 20): Observable<{ tracks: SpotifyTrack[] }> {
-    const params = new HttpParams()
-      .set('seed_genres', 'pop,rock,hip-hop')
-      .set('limit', limit.toString());
-
-    return this.http.get<{ tracks: SpotifyTrack[] }>(
-      `${environment.API_URL}/recommendations`,
-      { params }
-    );
+    return this.http.get<SpotifySearchResponse>(url, { headers });
   }
 }

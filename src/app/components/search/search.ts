@@ -3,6 +3,8 @@ import { SpotifyAlbum, SpotifyArtist, SpotifyTrack } from '../../../app/interfac
 import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } from 'rxjs';
 import { SpotifyApiService } from '../../services/spotify/spotify-api-service';
 import { SpotifyAuthService } from '../../services/spotify/spotify-auth';
+import { AudioService, Song } from '../../services/audio-service';
+
 
 @Component({
   selector: 'app-search',
@@ -12,20 +14,21 @@ import { SpotifyAuthService } from '../../services/spotify/spotify-auth';
 })
 export class Search implements OnInit, OnDestroy {
   searchTerm$ = new Subject<string>();
-  
+
   tracks: SpotifyTrack[] = [];
   albums: SpotifyAlbum[] = [];
   artists: SpotifyArtist[] = [];
-  
+
   isLoading: boolean = false;
   hasSearched: boolean = false;
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private spotifyApiService: SpotifyApiService,
-    private spotifyAuthService: SpotifyAuthService
-  ) {}
+    private spotifyAuthService: SpotifyAuthService,
+    private audioService: AudioService
+  ) { }
 
   ngOnInit(): void {
     this.ensureAuthentication();
@@ -53,7 +56,7 @@ export class Search implements OnInit, OnDestroy {
           this.clearResults();
           return [];
         }
-        
+
         this.isLoading = true;
         return this.spotifyApiService.search(term, ['track', 'album', 'artist'], 10);
       })
@@ -98,4 +101,26 @@ export class Search implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  private mapSpotifyTrackToSong(track: SpotifyTrack): Song {
+    return {
+      song_name: track.name,
+      artist_name: track.artists.map(a => a.name).join(', '),
+      song_url: track.preview_url || '', // ojo: algunas canciones no tienen preview
+      caratula: track.album.images?.[0]?.url || '',
+      duration: this.formatDuration(track.duration_ms)
+    };
+  }
+
+  playTrack(track: SpotifyTrack): void {
+    if (!track.preview_url) {
+      console.warn('Esta canción no tiene preview disponible.');
+      return;
+    }
+    const song = this.mapSpotifyTrackToSong(track);
+    this.audioService.init([song]);  // cargamos una sola canción
+    this.audioService.play();        // reproducimos
+  }
+
+
 }

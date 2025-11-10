@@ -1,61 +1,41 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { CookiesStorageService } from '../cookie-service';
 import { SpotifyTokenResponse } from '../../../app/interface/interface';
 import { environment } from '../../../app/environments/environments.development';
+import { spotify } from '../../environments/environments.local';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpotifyAuthService {
-  private tokenSubject = new BehaviorSubject<string | null>(null);
-  public token$ = this.tokenSubject.asObservable();
+  private token: string | null = null;
+  private tokenExpiration: number = 0;
 
-  constructor(
-    private http: HttpClient,
-    private cookiesService: CookiesStorageService
-  ) {
-    this.initializeToken();
+  constructor(private http: HttpClient) {}
+
+  hasValidToken(): boolean {
+    return !!this.token && Date.now() < this.tokenExpiration;
   }
 
-  private initializeToken(): void {
-    const token = this.cookiesService.getKeyValue('access_token');
-    if (token && this.cookiesService.isCookieValid('access_token')) {
-      this.tokenSubject.next(token);
-    } else {
-      this.getClientCredentialsToken().subscribe();
-    }
+  getAccessToken(): string | null {
+    return this.token;
   }
 
   getClientCredentialsToken(): Observable<SpotifyTokenResponse> {
     const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + btoa(`${spotify.CLIENT_ID}:${spotify.CLIENT_SECRET}`)
     });
 
-    const body = new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: environment.CLIENT_ID,
-      client_secret: environment.CLIENT_SECRET
-    }).toString();
+    const body = new HttpParams().set('grant_type', 'client_credentials');
 
-    return this.http.post<SpotifyTokenResponse>(
-      environment.AUTH_API_URL,
-      body,
-      { headers }
-    ).pipe(
+    return this.http.post<SpotifyTokenResponse>(spotify.AUTH_API_URL, body, { headers }).pipe(
       tap(response => {
-        this.tokenSubject.next(response.access_token);
+        this.token = response.access_token;
+        this.tokenExpiration = Date.now() + (response.expires_in * 1000); 
       })
     );
-  }
-
-  hasValidToken(): boolean {
-    return this.cookiesService.exists('access_token') && 
-           this.cookiesService.isCookieValid('access_token');
-  }
-
-  getToken(): string | null {
-    return this.cookiesService.getKeyValue('access_token');
   }
 }
